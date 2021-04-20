@@ -1,0 +1,44 @@
+﻿@model IEnumerable<BankingWebSite.Models.Transaction>
+
+@{
+	ViewData["Title"] = "Transactions";
+}
+
+<h1>Transactions</h1>
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				@Html.DisplayNameFor(model => model.Date)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Amount)
+			</th>
+			<th>
+				@Html.DisplayNameFor(model => model.Account) @Html.DisplayNameFor(model => model.Account.Number)
+			</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.Date)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.Amount) €
+				</td>
+				<td>
+					<a asp-controller="Accounts" asp-action="Details" asp-route-id="@item.Account.Id">@Html.DisplayFor(modelItem => item.Account.Number)</a>
+				</td>
+				<td>
+					<a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+					<a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
