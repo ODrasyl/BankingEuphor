@@ -1,4 +1,4 @@
-﻿@model BankingWebSite.Models.Account
+﻿@model BankingWebSite.Models.AccountViewModel
 
 @{
 	ViewData["Title"] = "Details Account";
@@ -49,6 +49,9 @@
 				}
 			</table>
 		</dd>
+		<dt class="col-sm-2">
+			<a asp-controller="UserAccounts" asp-action="DeleteAccount" asp-route-id="@Model.UserAccountId">Delet Account</a>
+		</dt>
 	</dl>
 </div>
 <div>

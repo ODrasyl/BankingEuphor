@@ -1,4 +1,4 @@
-﻿@model BankingWebSite.Models.UserAccount
+﻿@model BankingWebSite.Models.UserAccountViewModel
 
 @{
 	ViewData["Title"] = "Details UserAccount";
@@ -18,13 +18,13 @@
 		</dd>
 
 		<dt class="col-sm-2">
-			@Html.DisplayNameFor(model => model.Account)
+			Account
 		</dt>
 		@*<dd class="col-sm-10">
 			@Html.DisplayFor(model => model.Account.Id)
 		</dd>*@
 		<dd class="col-sm-10">
-			<a asp-controller="Accounts" asp-action="Details" asp-route-id="@Model.Account.Id">@Html.DisplayFor(modelItem => Model.Account.Number)</a>
+			<a asp-controller="Accounts" asp-action="Details" asp-route-id="@Model.AccountId">@Html.DisplayFor(modelItem => Model.AccountNumber)</a>
 		</dd>
 	</dl>
 </div>

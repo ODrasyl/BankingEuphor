@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BankingWebSite.Models.Transaction>
+﻿@model IEnumerable<BankingWebSite.Models.TransactionViewModel>
 
 @{
 	ViewData["Title"] = "Transactions";
@@ -16,7 +16,7 @@
 				@Html.DisplayNameFor(model => model.Amount)
 			</th>
 			<th>
-				@Html.DisplayNameFor(model => model.Account) @Html.DisplayNameFor(model => model.Account.Number)
+				Account @Html.DisplayNameFor(model => model.AccountNumber)
 			</th>
 			<th></th>
 		</tr>
@@ -32,7 +32,7 @@
 					@Html.DisplayFor(modelItem => item.Amount) €
 				</td>
 				<td>
-					<a asp-controller="Accounts" asp-action="Details" asp-route-id="@item.Account.Id">@Html.DisplayFor(modelItem => item.Account.Number)</a>
+					<a asp-controller="Accounts" asp-action="Details" asp-route-id="@item.AccountId">@Html.DisplayFor(modelItem => item.AccountNumber)</a>
 				</td>
 				<td>
 					<a asp-action="Details" asp-route-id="@item.Id">Details</a> |

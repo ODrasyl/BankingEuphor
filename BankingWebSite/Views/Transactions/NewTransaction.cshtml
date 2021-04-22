@@ -1,33 +1,43 @@
 ﻿@model BankingWebSite.Models.TransactionViewModel
 
 @{
-    ViewData["Title"] = "New Transaction";
+	ViewData["Title"] = "New Transaction";
 }
 
 <h1>New Transaction</h1>
 
 <hr />
 <div class="row">
-    <div class="col-md-4">
+	<div class="col-md-4">
 		<form asp-action="NewTransaction">
 			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
 			<input type="hidden" asp-for="AccountId" value="@ViewData["AccountId"]" />
 			<div class="form-group">
 				<label asp-for="Amount" class="control-label"></label>
-				<input asp-for="Amount" class="form-control" />
+				<table class="tab-content">
+					<tr>
+						<th><input asp-for="Amount" class="form-control" /></th>
+						<th> €</th>
+					</tr>
+				</table>
 				<span asp-validation-for="Amount" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="IsReceived" class="control-label">The transaction is received and not sent ?</label>
+				<input asp-for="IsReceived" class="form-control" />
+				<span asp-validation-for="IsReceived" class="text-danger"></span>
 			</div>
 			<div class="form-group">
 				<input type="submit" value="NewTransaction" class="btn btn-primary" />
 			</div>
 		</form>
-    </div>
+	</div>
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+	<a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+	@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

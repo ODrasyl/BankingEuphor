@@ -1,62 +1,52 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using BankingDatabase.Interface;
 using BankingWebSite.Models;
 
 namespace BankingWebSite.Controllers
 {
     public class TransactionsController : Controller
     {
-        private readonly BankingContext _context;
+        private readonly ITransactionRepository _transactionRepository;
 
-        public TransactionsController(BankingContext context)
-        {
-            _context = context;
-        }
+        public TransactionsController(ITransactionRepository transactionRepository)
+            => (_transactionRepository) = (transactionRepository);
 
         // GET: Transactions
         public async Task<IActionResult> Index()
         {
-            var bankingContext = _context.Transactions.Include(t => t.Account);
-            return View(await bankingContext.ToListAsync());
+            var transactions = _transactionRepository.GetTransactions();
+            return View(Tools.ConvertTransactions(await transactions.AsNoTracking().ToListAsync()));
         } 
 
         // GET: Transactions/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var transaction = await _context.Transactions
-                .Include(t => t.Account)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction(((id.HasValue) ? (int)id : 0)));
             if (transaction == null)
-            {
                 return NotFound();
-            }
 
             return View(transaction);
         }
 
         // GET: Accounts/NewTransaction/5
-        public async Task<IActionResult> NewTransaction(int? accountId)
+        public IActionResult NewTransaction(int? accountId)
         {
             if (accountId == null)
-            {
                 return NotFound();
-            }
 
-            var account = await _context.Accounts.FindAsync(accountId);
-            if (account == null)
-            {
+            if (!_transactionRepository.AccountExists(((accountId.HasValue) ? (int)accountId : 0)))
                 return NotFound();
-            }
+
             ViewData["AccountId"] = accountId;
             return View();
         }
@@ -66,73 +56,36 @@ namespace BankingWebSite.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> NewTransaction(int accountId, [Bind("Id,AccountId,Date,Amount")] TransactionViewModel transaction)
+        public async Task<IActionResult> NewTransaction(int accountId, [Bind("AccountId,Amount,IsReceived")] TransactionViewModel transactionViewModel)
         {
-            if (accountId != transaction.AccountId)
-            {
+            if (accountId != transactionViewModel.AccountId)
                 return NotFound();
-            }
 
-            var newTransaction = new Transaction
-            {
-                AccountId = transaction.AccountId,
-                Date = DateTime.UtcNow,
-                Amount = transaction.Amount
-            };
-
+            var transaction = Tools.ConvertTransaction(transactionViewModel);
             if (ModelState.IsValid)
             {
-                newTransaction.Amount = -newTransaction.Amount;
-                _context.Add(newTransaction);
-                var account = await _context.Accounts.FindAsync(accountId);
-                account.Balance += newTransaction.Amount;
-                _context.Update(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "Accounts", await _context.Accounts.FindAsync(accountId));
+                int transactionId = await _transactionRepository.CreateNewTransaction(transaction, transactionViewModel.IsReceived);
+                if (transactionId == 0)
+                {
+                    ViewData["AccountId"] = accountId;
+                    return View(transactionViewModel); //TODO display error in htlm
+                }
+                return RedirectToAction("Details", "Accounts", await _transactionRepository.GetAccount(transactionId));
             }
+
             ViewData["AccountId"] = accountId;
-            return View(transaction);
-        }
-
-        // GET: Transactions/Create
-        public IActionResult Create()
-        {
-            ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "Id");
-            return View();
-        }
-
-        // POST: Transactions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,AccountId,Date,Amount")] Transaction transaction)
-        {
-            if (ModelState.IsValid)
-            {
-                _context.Add(transaction);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "Id", transaction.AccountId);
-            return View(transaction);
+            return View(transactionViewModel); //TODO display error in htlm
         }
 
         // GET: Transactions/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
-            var transaction = await _context.Transactions
-                .Include(t => t.Account)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction(((id.HasValue) ? (int)id : 0)));
             if (transaction == null)
-            {
                 return NotFound();
-            }
 
             return View(transaction);
         }
@@ -142,15 +95,12 @@ namespace BankingWebSite.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var transaction = await _context.Transactions.FindAsync(id);
-            _context.Transactions.Remove(transaction);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool TransactionExists(int id)
-        {
-            return _context.Transactions.Any(e => e.Id == id);
+            var accountId = await _transactionRepository.DeletTransaction(id);
+            if (!_transactionRepository.AccountExists(accountId))
+			{
+                return RedirectToAction("Index", "Accounts");
+            }
+            return RedirectToAction("Details", "Accounts", await _transactionRepository.GetAccountWithAccountId(accountId));
         }
     }
 }

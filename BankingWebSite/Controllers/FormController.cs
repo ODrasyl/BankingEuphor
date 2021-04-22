@@ -6,18 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BankingWebSite.Models;
+using BankingDatabase.Interface;
 using System.Text.Encodings.Web;
 
 namespace BankingWebSite.Controllers
 {
 	public class FormController : Controller
     {
-        private readonly BankingContext _context;
+        private readonly IAccountRepository _accountRepository;
+        private readonly IUserAccountRepository _userAccountRepository;
+        private readonly ITransactionRepository _transactionRepository;
 
-        public FormController(BankingContext context)
-        {
-            _context = context;
-        }
+        public FormController(IAccountRepository accountRepository, IUserAccountRepository userAccountRepository, ITransactionRepository transactionRepository)
+            => (_accountRepository, _userAccountRepository, _transactionRepository) = (accountRepository, userAccountRepository, transactionRepository);
 
         // GET: /HelloWorld/
         public IActionResult Index()
@@ -33,19 +34,15 @@ namespace BankingWebSite.Controllers
         }
 
         // GET: Accounts/NewTransaction/5
-        public async Task<IActionResult> Create(int? accountId)
+        public IActionResult Create(int? accountId)
         {
             if (accountId == null)
-            {
                 return NotFound();
-            }
 
-            var account = await _context.Accounts.FindAsync(accountId);
-            if (account == null)
-            {
+            if (_accountRepository.AccountExists(((accountId.HasValue) ? (int)accountId : 0)))
                 return NotFound();
-            }
-            ViewData["AccountId"] = accountId;//new SelectList(_context.Accounts, "Id", "Id");
+
+            ViewData["AccountId"] = accountId;
             return View();
         }
 
@@ -54,20 +51,19 @@ namespace BankingWebSite.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int accountId, [Bind("Id,AccountId,Date,Amount")] Transaction transaction)
+        public async Task<IActionResult> Create(int accountId, [Bind("Id,AccountId,Date,Amount")] TransactionViewModel transactionViewModel)
         {
-            if (accountId != transaction.AccountId)
-            {
+            if (accountId != transactionViewModel.AccountId)
                 return NotFound();
-            }
 
+            var transaction = Tools.ConvertTransaction(transactionViewModel);
             if (ModelState.IsValid)
             {
-                _context.Add(transaction);
-                await _context.SaveChangesAsync();
+                await _transactionRepository.CreateNewTransaction(transaction);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["AccountId"] = accountId;//new SelectList(_context.Accounts, "Id", "Id", transaction.AccountId);
+
+            ViewData["AccountId"] = accountId;
             return View(transaction);
         }
     }

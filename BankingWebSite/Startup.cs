@@ -8,8 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BankingWebSite.Models;
 using Microsoft.EntityFrameworkCore;
+using BankingDatabase;
+using BankingDatabase.Interface;
+using BankingDatabase.Repository;
 
 namespace BankingWebSite
 {
@@ -25,8 +27,25 @@ namespace BankingWebSite
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<BankingContext>(options =>
+			#region Database
+
+			services.AddDbContext<BankingDbContext>(options =>
 				options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+			#endregion
+
+			#region Dependency Injection
+
+			#region Model
+
+			services.AddTransient<IUserRepository, UserRepository>();
+			services.AddTransient<IAccountRepository, AccountRepository>();
+			services.AddTransient<IUserAccountRepository, UserAccountRepository>();
+			services.AddTransient<ITransactionRepository, TransactionRepository>();
+
+			#endregion
+
+			#endregion
 
 			services.AddDatabaseDeveloperPageExceptionFilter();
 
