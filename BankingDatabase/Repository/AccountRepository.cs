@@ -58,7 +58,7 @@ namespace BankingDatabase.Repository
 			}
 			else
 			{
-				throw new ArgumentException(nameof(amount), "Withdrawal exceeds balance!");
+				throw new ArgumentException("Withdrawal exceeds balance!", nameof(amount));
 			}
 		}
 
