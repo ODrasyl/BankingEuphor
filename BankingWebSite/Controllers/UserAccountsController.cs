@@ -31,7 +31,7 @@ namespace BankingWebSite.Controllers
 			if (id == null)
 				return NotFound();
 
-			var userAccount = Tools.ConvertUserAccount(await _userAccountRepository.GetUserAccount(((id.HasValue) ? (int)id : 0)));
+			var userAccount = Tools.ConvertUserAccount(await _userAccountRepository.GetUserAccount((int)id));
 			if (userAccount == null)
 				return NotFound();
 
@@ -68,7 +68,7 @@ namespace BankingWebSite.Controllers
 			if (id == null)
 				return NotFound();
 
-			var userAccount = Tools.ConvertUserAccount(await _userAccountRepository.GetUserAccount(((id.HasValue) ? (int)id : 0)));
+			var userAccount = Tools.ConvertUserAccount(await _userAccountRepository.GetUserAccount((int)id));
 			if (userAccount == null)
 				return NotFound();
 

@@ -41,6 +41,27 @@ namespace BankingDatabase.Repository
 			return account;
 		}
 
+		//TODO correct this methode
+		//TODO use in NewTransaction
+		//TODO create HTML page to use directly
+		//TODO create deposit method and use it
+		public async void Withdraw(int id, decimal amount)
+		{
+			if (!AccountExists(id))
+				throw new MissingMemberException(nameof(Account), "Account with Id " + id + "don't exist !");
+
+			var account = await GetAccount(id);
+			if (account.Balance >= amount)
+			{
+				account.Balance -= amount;
+				await _context.SaveChangesAsync();
+			}
+			else
+			{
+				throw new ArgumentException(nameof(amount), "Withdrawal exceeds balance!");
+			}
+		}
+
 		public bool AccountExists(int id)
 		{
 			return _context.Accounts.Any(e => e.Id == id);

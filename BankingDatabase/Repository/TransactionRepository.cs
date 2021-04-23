@@ -77,7 +77,7 @@ namespace BankingDatabase.Repository
 			_context.Add(transaction);
 
 			var account = await _context.Accounts.FindAsync(transaction.AccountId);
-			account.Balance += transaction.Amount;
+			account.Balance += transaction.Amount; //TODO create and use methodes Deposit and Withdraw in IAccountRepository
 			_context.Update(account);
 
 			await _context.SaveChangesAsync();

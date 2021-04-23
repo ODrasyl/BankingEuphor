@@ -31,7 +31,7 @@ namespace BankingWebSite.Controllers
             if (id == null)
                 return NotFound();
 
-            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction(((id.HasValue) ? (int)id : 0)));
+            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction((int)id));
             if (transaction == null)
                 return NotFound();
 
@@ -44,7 +44,7 @@ namespace BankingWebSite.Controllers
             if (accountId == null)
                 return NotFound();
 
-            if (!_transactionRepository.AccountExists(((accountId.HasValue) ? (int)accountId : 0)))
+            if (!_transactionRepository.AccountExists((int)accountId))
                 return NotFound();
 
             ViewData["AccountId"] = accountId;
@@ -83,7 +83,7 @@ namespace BankingWebSite.Controllers
             if (id == null)
                 return NotFound();
 
-            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction(((id.HasValue) ? (int)id : 0)));
+            var transaction = Tools.ConvertTransaction(await _transactionRepository.GetTransaction((int)id));
             if (transaction == null)
                 return NotFound();
 

@@ -11,6 +11,7 @@ namespace BankingDatabase.Interface
 	{
 		public IQueryable<Account> GetAccounts(); //TODO make async
 		public Task<Account> GetAccount(int id);
+		public void Withdraw(int id, decimal amount);
 		public bool AccountExists(int id);
 	}
 }

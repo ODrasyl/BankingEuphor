@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BankingDatabase.Interface;
 using BankingWebSite.Models;
-
+#nullable enable
 namespace BankingWebSite.Controllers
 {
 	public class UsersController : Controller
@@ -31,7 +31,7 @@ namespace BankingWebSite.Controllers
 			if (id == null)
 				return NotFound();
 
-			var user = Tools.ConvertUser(await _userRepository.GetUser(((id.HasValue) ? (int)id : 0)));
+			var user = Tools.ConvertUser(await _userRepository.GetUser((int)id));
 			if (user == null)
 				return NotFound();
 
@@ -44,7 +44,7 @@ namespace BankingWebSite.Controllers
 			if (id == null)
 				return NotFound();
 
-			var user = Tools.ConvertUser(await _userRepository.GetUser(((id.HasValue) ? (int)id : 0)));
+			var user = Tools.ConvertUser(await _userRepository.GetUser((int)id));
 			if (user == null)
 				return NotFound();
 

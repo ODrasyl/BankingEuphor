@@ -31,7 +31,7 @@ namespace BankingWebSite.Controllers
 			if (id == null)
 				return NotFound();
 
-			var account = Tools.ConvertAccount(await _accountRepository.GetAccount(((id.HasValue) ? (int)id : 0)));
+			var account = Tools.ConvertAccount(await _accountRepository.GetAccount((int)id));
 			if (account == null)
 				return NotFound();
 
