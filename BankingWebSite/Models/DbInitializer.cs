@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BankingDatabase;
+using Microsoft.EntityFrameworkCore;
 using BankingDatabase.Entity;
 using BankingDatabase.Interface;
 
@@ -10,6 +11,16 @@ namespace BankingWebSite.Models
 {
 	public class DbInitializer
 	{
+		public static BankingDbContext GetDatabaseContext()
+		{
+			var options = new DbContextOptionsBuilder<BankingDbContext>()
+				.UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+				.Options;
+			var context = new BankingDbContext(options);
+			Initialize(context);
+			return context;
+		}
+
 		public static void Initialize(IUserRepository userRepository, IUserAccountRepository userAccountRepository, ITransactionRepository transactionRepository)
 		{
 			userRepository.EnsureDbCreated();
@@ -77,45 +88,36 @@ namespace BankingWebSite.Models
 			foreach (User u in users)
 			{
 				context.Users.Add(u);
-			}
-			context.SaveChanges();
 
-			var accounts = new Account[]
-			{
-			new Account{Number="11564678521641",Balance=1280},
-			new Account{Number="34343543453451",Balance=1520},
-			new Account{Number="14354345433454",Balance=150},
-			new Account{Number="15434535454545",Balance=4152},
-			new Account{Number="53455923945865",Balance=1650},
-			new Account{Number="45345347856631",Balance=162},
-			new Account{Number="36589678536361",Balance=6152},
-			new Account{Number="19546412476534",Balance=620}
-			};
-			foreach (Account a in accounts)
-			{
-				context.Accounts.Add(a);
-			}
-			context.SaveChanges();
+				var account = new Account
+				{
+					Number = CreateNewAccountNumber(context),
+					Balance = 0
+				};
+				context.Accounts.Add(account);
 
-			var userAccounts = new UserAccount[]
-			{
-			new UserAccount{UserId=1,AccountId=1},
-			new UserAccount{UserId=2,AccountId=2},
-			new UserAccount{UserId=3,AccountId=3},
-			new UserAccount{UserId=4,AccountId=4},
-			new UserAccount{UserId=5,AccountId=5},
-			new UserAccount{UserId=6,AccountId=6},
-			new UserAccount{UserId=7,AccountId=7},
-			new UserAccount{UserId=8,AccountId=8},
-			};
-			foreach (UserAccount ua in userAccounts)
-			{
-				context.UserAccounts.Add(ua);
+				context.SaveChanges();
+
+				var userAccount = new UserAccount
+				{
+					UserId = u.Id,
+					AccountId = account.Id
+				};
+				context.UserAccounts.Add(userAccount);
 			}
 			context.SaveChanges();
 
 			var transactions = new Transaction[]
 			{
+			new Transaction{AccountId=1,Date=DateTime.Parse("2021-03-05 14:30"),Amount=5641},
+			new Transaction{AccountId=2,Date=DateTime.Parse("2021-03-05 14:30"),Amount=752},
+			new Transaction{AccountId=3,Date=DateTime.Parse("2021-05-02 11:30"),Amount=1887},
+			new Transaction{AccountId=4,Date=DateTime.Parse("2021-07-01 16:30"),Amount=625},
+			new Transaction{AccountId=5,Date=DateTime.Parse("2021-09-01 10:30"),Amount=986},
+			new Transaction{AccountId=6,Date=DateTime.Parse("2021-05-02 11:30"),Amount=12000},
+			new Transaction{AccountId=7,Date=DateTime.Parse("2021-07-01 16:30"),Amount=2547},
+			new Transaction{AccountId=8,Date=DateTime.Parse("2021-09-01 10:30"),Amount=120},
+
 			new Transaction{AccountId=5,Date=DateTime.Parse("2021-03-05 14:30"),Amount=-1000},
 			new Transaction{AccountId=1,Date=DateTime.Parse("2021-03-05 14:30"),Amount=1000},
 			new Transaction{AccountId=5,Date=DateTime.Parse("2021-05-02 11:30"),Amount=550},
@@ -125,8 +127,30 @@ namespace BankingWebSite.Models
 			foreach (Transaction t in transactions)
 			{
 				context.Transactions.Add(t);
+
+				var account = context.Accounts
+					.FirstOrDefault(m => m.Id == t.AccountId);
+				account.Balance += t.Amount;
+				context.Accounts.Update(account);
 			}
 			context.SaveChanges();
+		}
+
+		private static string CreateNewAccountNumber(BankingDbContext context)
+		{
+			var r = new Random();
+			string accountNumber;
+			while (CheckAccountNumber(accountNumber = ((long)(r.NextDouble() * 100000000000000)).ToString(), context)) ;
+			return accountNumber;
+		}
+		private static bool CheckAccountNumber(string accountNumber, BankingDbContext context)
+		{
+			foreach (var num in context.Accounts)
+			{
+				if (accountNumber == num.Number)
+					return true;
+			}
+			return false;
 		}
 	}
 }
